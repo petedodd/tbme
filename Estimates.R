@@ -5,13 +5,19 @@ library(here)
 ## utilities
 xfun <- function(X,Y,X.sd,Y.sd) X*Y*sqrt((X.sd/X)^2+(Y.sd/Y)^2) #unc for X x Y
 
-## === load the proportions &  CFR from MO's analysis
-load(file=here('indata/BB.Rdata'))
-BBM <- BB[,.(propm=mean(pm),cfr=mean(cfr),propm.sd=sd(pm),cfr.sd=sd(cfr)),by=.(acat,Sex)] #summarize like this until method clear
-BBM <- BBM[!acat %in% c('0-4','5-14')]
-BBM[,sex:=ifelse(Sex=='Female','F','M')]
-BBM[,age:=acat]
-BBM[,c('acat','Sex'):=NULL]
+## === now using the propm & CFR from other meta-analysis
+load(here('indata/preds/TBMP.nh.Rdata'))
+load(here('indata/preds/TBMP.h.Rdata'))
+load(here('indata/preds/CFR.nh.Rdata'))
+load(here('indata/preds/CFR.h.Rdata'))
+
+## HIV-ves
+BBM <- merge(TBMP.nh[,.(age,sex,propm=pred,propm.sd=(pred.hi-pred.lo)/3.92)],
+             CFR.nh[,.(age,sex,cfr=pred,cfr.sd=(pred.hi-pred.lo)/3.92)],
+             by=c('age','sex'))
+BBM[,sex:=ifelse(sex=='female','F','M')]
+
+## HIV+ves
 
 ## === load WHO notifications
 ## http://www.who.int/tb/country/data/download/en/
@@ -97,16 +103,21 @@ AN <- merge(AN,unique(N[,.(iso3,g_whoregion)]),by='iso3',all.x = TRUE,all.y=FALS
 
 ## global
 G <- AN[,.(TBM.treated=sum(TBM.treated),TBM.untreated=sum(TBM.untreated),
-           TBMdeaths.treated=sum(TBMdeaths.treated),TBMdeaths.untreated=sum(TBMdeaths.untreated))]
+           TBMdeaths.treated=sum(TBMdeaths.treated),
+           TBMdeaths.untreated=sum(TBMdeaths.untreated))]
 GA <- AN[,.(TBM.treated=sum(TBM.treated),TBM.untreated=sum(TBM.untreated),
-           TBMdeaths.treated=sum(TBMdeaths.treated),TBMdeaths.untreated=sum(TBMdeaths.untreated)),by=.(sex,age)]
+            TBMdeaths.treated=sum(TBMdeaths.treated),
+            TBMdeaths.untreated=sum(TBMdeaths.untreated)),by=.(sex,age)]
 GA
 
 ## regional
 R <- AN[,.(TBM.treated=sum(TBM.treated),TBM.untreated=sum(TBM.untreated),
-           TBMdeaths.treated=sum(TBMdeaths.treated),TBMdeaths.untreated=sum(TBMdeaths.untreated)),by=g_whoregion]
+           TBMdeaths.treated=sum(TBMdeaths.treated),
+           TBMdeaths.untreated=sum(TBMdeaths.untreated)),by=g_whoregion]
 RA <- AN[,.(TBM.treated=sum(TBM.treated),TBM.untreated=sum(TBM.untreated),
-            TBMdeaths.treated=sum(TBMdeaths.treated),TBMdeaths.untreated=sum(TBMdeaths.untreated)),by=.(g_whoregion,sex,age)]
+            TBMdeaths.treated=sum(TBMdeaths.treated),
+            TBMdeaths.untreated=sum(TBMdeaths.untreated)),
+         by=.(g_whoregion,sex,age)]
 R
 
 G[,g_whoregion:='Global']
@@ -126,3 +137,6 @@ save(G,file=here('outdata/G.Rdata'))
 save(GA,file=here('outdata/GA.Rdata'))
 save(R,file=here('outdata/R.Rdata'))
 save(RA,file=here('outdata/RA.Rdata'))
+
+## check aggrergate implied CFR
+(1e2*G[,TBMdeaths.treated/TBM.treated]) #18.5%, cf 0.16 (0.10, 0.24) in Anna
