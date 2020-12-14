@@ -65,7 +65,7 @@ H <- H[year==2018,.(iso3,e_tbhiv_prct,e_tbhiv_prct_lo,e_tbhiv_prct_hi)]
 H[is.na(e_tbhiv_prct),c('e_tbhiv_prct','e_tbhiv_prct_lo','e_tbhiv_prct_hi'):=0] #check OK to drop
 H[,hiv:=e_tbhiv_prct/100]
 H[,hiv.sd:=(e_tbhiv_prct_hi-e_tbhiv_prct_lo)/392]
-## TODO -- think about pattern by age/sex
+
 
 ## === merge data
 AN <- merge(NP[,.(iso3,sex,age,notes=value)],
