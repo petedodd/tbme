@@ -1,9 +1,8 @@
 ## sketching global estimates
-library(data.table)
+## NOTE requires data in indata folder
+## NOTE please make a folder outdata for temporary data (excluded from repo)
 library(here)
-
-## utilities
-xfun <- function(X,Y,X.sd,Y.sd) X*Y*sqrt((X.sd/X)^2+(Y.sd/Y)^2) #unc for X x Y
+source(here('utilities.R'))
 
 ## === now using the propm & CFR from other meta-analysis
 load(here('indata/preds/TBMP.nh.Rdata'))
@@ -58,6 +57,7 @@ A[age=='65plus',age:='65+']
 A[sex=='f',sex:='F']
 A[sex=='m',sex:='M']
 unique(A[,.(sex,age)])                  #check
+A[,best.sd:=(hi-lo)/3.92]
 
 ## HIV
 H <- fread(here('indata/TB_burden_countries_2020-02-24.csv'))
@@ -73,6 +73,7 @@ AN <- merge(NP[,.(iso3,sex,age,notes=value)],
             by=c('iso3','sex','age'),all.x=TRUE,all.y=FALSE)
 AN[notes>inc]                           #a few to watch out for
 AN[,untreated:=pmax(inc-notes,0)]
+AN[,untreated.sd:=(hi-lo)/3.92]         #as per incidence
 AN <- merge(AN,H[,.(iso3,hiv,hiv.sd)],by=c('iso3'),all.x=TRUE,all.y=FALSE)
 
 ## merge in BBM
@@ -82,8 +83,8 @@ AN <- merge(AN,BBM,by=c('sex','age'),all.x=TRUE)
 ## calculations of TBM
 ## cases
 AN[,c('TBM.treated','TBM.untreated'):=.(notes*propm,untreated*propm)]
-## AN[,c('TBM.treated.sd','TBM.untreated.sd'):=.(TODO,TODO)]
-## TODO using Z.sd = Z * sqrt((X.sd/X)^2+(Y.sd/Y)^2) for Z = X * Y: see xfun near top
+AN[,c('TBM.treated.sd','TBM.untreated.sd'):=.(xfun(notes,propm,0,propm.sd),
+                                              xfun(untreated,propm,untreated.sd,propm.sd))]
 ## TODO split by HIV
 
 ## sanity checks
@@ -93,50 +94,20 @@ AN[,sum(untreated)]*5/1e3
 
 ## deaths
 AN[,c('TBMdeaths.treated','TBMdeaths.untreated'):=.(TBM.treated*cfr,TBM.untreated)]
+AN[,c('TBMdeaths.treated.sd','TBMdeaths.untreated.sd'):=.(xfun(TBM.treated,cfr,
+                                                               TBM.treated.sd,cfr.sd),
+                                                          xfun(TBM.untreated,1,
+                                                               TBM.untreated.sd,0))]
 ## TODO:
 ## HIV split
-## uncertainty for untreated CFR (currently 100%)
-## uncertainty for cfr
+
 
 ## exploring results
 AN <- merge(AN,unique(N[,.(iso3,g_whoregion)]),by='iso3',all.x = TRUE,all.y=FALSE)
 
-## global
-G <- AN[,.(TBM.treated=sum(TBM.treated),TBM.untreated=sum(TBM.untreated),
-           TBMdeaths.treated=sum(TBMdeaths.treated),
-           TBMdeaths.untreated=sum(TBMdeaths.untreated))]
-GA <- AN[,.(TBM.treated=sum(TBM.treated),TBM.untreated=sum(TBM.untreated),
-            TBMdeaths.treated=sum(TBMdeaths.treated),
-            TBMdeaths.untreated=sum(TBMdeaths.untreated)),by=.(sex,age)]
-GA
 
-## regional
-R <- AN[,.(TBM.treated=sum(TBM.treated),TBM.untreated=sum(TBM.untreated),
-           TBMdeaths.treated=sum(TBMdeaths.treated),
-           TBMdeaths.untreated=sum(TBMdeaths.untreated)),by=g_whoregion]
-RA <- AN[,.(TBM.treated=sum(TBM.treated),TBM.untreated=sum(TBM.untreated),
-            TBMdeaths.treated=sum(TBMdeaths.treated),
-            TBMdeaths.untreated=sum(TBMdeaths.untreated)),
-         by=.(g_whoregion,sex,age)]
-R
+save(AN,file=here('outdata/AN.Rdata'))
 
-G[,g_whoregion:='Global']
-GR <- rbind(R[order(g_whoregion)],G)
-
-
-## looking at big numbers
-see <- function(x,ns=3)formatC(signif(x,ns),big.mark = ",",format='fg') #for reading big numbers
-
-GRO <- cbind(Region=GR$g_whoregion,GR[,lapply(.SD,see),.SDcols=2:5])
-
-## save out
-fwrite(GRO,file=here('outdata/GRO.csv'))
-fwrite(AN,file=here('outdata/AN.csv'))
-
-save(G,file=here('outdata/G.Rdata'))
-save(GA,file=here('outdata/GA.Rdata'))
-save(R,file=here('outdata/R.Rdata'))
-save(RA,file=here('outdata/RA.Rdata'))
-
-## check aggrergate implied CFR
-(1e2*G[,TBMdeaths.treated/TBM.treated]) #18.5%, cf 0.16 (0.10, 0.24) in Anna
+## TODO list
+## 1. Pete - include HIV split
+## 2. Anna - check unc calx
