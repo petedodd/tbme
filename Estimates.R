@@ -17,6 +17,10 @@ BBM <- merge(TBMP.nh[,.(age,sex,propm=pred,propm.sd=(pred.hi-pred.lo)/3.92)],
 BBM[,sex:=ifelse(sex=='female','F','M')]
 
 ## HIV+ves
+BBMp <- merge(TBMP.h[,.(age,sex,propmp=pred,propmp.sd=(pred.hi-pred.lo)/3.92)],
+             CFR.h[,.(age,sex,cfrp=pred,cfrp.sd=(pred.hi-pred.lo)/3.92)],
+             by=c('age','sex'))
+BBMp[,sex:=ifelse(sex=='female','F','M')]
 
 ## === load WHO notifications
 ## http://www.who.int/tb/country/data/download/en/
@@ -77,37 +81,46 @@ AN[,untreated.sd:=(hi-lo)/3.92]         #as per incidence
 AN <- merge(AN,H[,.(iso3,hiv,hiv.sd)],by=c('iso3'),all.x=TRUE,all.y=FALSE)
 
 ## merge in BBM
-AN <- merge(AN,BBM,by=c('sex','age'),all.x=TRUE)
+AN <- merge(AN,BBM,by=c('sex','age'),all.x=TRUE)  #HIV -ve
+AN <- merge(AN,BBMp,by=c('sex','age'),all.x=TRUE) #HIV +ve
 
 
-## calculations of TBM
-## cases
-AN[,c('TBM.treated','TBM.untreated'):=.(notes*propm,untreated*propm)]
-AN[,c('TBM.treated.sd','TBM.untreated.sd'):=.(xfun(notes,propm,0,propm.sd),
-                                              xfun(untreated,propm,untreated.sd,propm.sd))]
-## TODO split by HIV
+## === calculations of TBM
+## --- cases
+AN[,c('TBM.hn.treated','TBM.hn.untreated'):=.(notes*propm*(1-hiv),untreated*propm*(1-hiv))] #HIV-ve
+AN[,c('TBM.hp.treated','TBM.hp.untreated'):=.(notes*propmp*hiv,untreated*propmp*hiv)] #HIV+ve
+## case uncertainty
+AN[,c('untreated.hn.sd','untreated.hp.sd'):=.(xfun(untreated,(1-hiv),untreated.sd,hiv.sd),
+                                              xfun(untreated,(hiv),untreated.sd,hiv.sd))]
+AN[,c('TBM.hn.treated.sd','TBM.hn.untreated.sd'):=.(xfun(notes*(1-hiv),propm,notes*hiv.sd,propm.sd),
+                                                    xfun(untreated*(1-hiv),propm,untreated.hn.sd,propm.sd))] #HIV-
+AN[,c('TBM.hp.treated.sd','TBM.hp.untreated.sd'):=.(xfun(notes,propmp,0,propmp.sd),
+                                                    xfun(untreated*hiv,propmp,untreated.hp.sd,propmp.sd))] #HIV+
 
 ## sanity checks
-AN[,sum(TBM.treated)]
+AN[,sum(TBM.hn.treated)]
+AN[,sum(TBM.hp.treated)]
 AN[,sum(notes)]*5/1e3
 AN[,sum(untreated)]*5/1e3
 
-## deaths
-AN[,c('TBMdeaths.treated','TBMdeaths.untreated'):=.(TBM.treated*cfr,TBM.untreated)]
-AN[,c('TBMdeaths.treated.sd','TBMdeaths.untreated.sd'):=.(xfun(TBM.treated,cfr,
-                                                               TBM.treated.sd,cfr.sd),
-                                                          xfun(TBM.untreated,1,
-                                                               TBM.untreated.sd,0))]
-## TODO:
-## HIV split
+## --- deaths
+## HIV-ve
+AN[,c('TBMdeaths.hn.treated','TBMdeaths.hn.untreated'):=.(TBM.hn.treated*cfr,TBM.hn.untreated)]
+AN[,c('TBMdeaths.hn.treated.sd','TBMdeaths.hn.untreated.sd'):=.(xfun(TBM.hn.treated,cfr,
+                                                                     TBM.hn.treated.sd,cfr.sd),
+                                                                xfun(TBM.hn.untreated,1,
+                                                                     TBM.hn.untreated.sd,0))]
+## HIV+ve
+AN[,c('TBMdeaths.hp.treated','TBMdeaths.hp.untreated'):=.(TBM.hp.treated*cfrp,TBM.hp.untreated)]
+AN[,c('TBMdeaths.hp.treated.sd','TBMdeaths.hp.untreated.sd'):=.(xfun(TBM.hp.treated,cfrp,
+                                                                     TBM.hp.treated.sd,cfrp.sd),
+                                                                xfun(TBM.hp.untreated,1,
+                                                                     TBM.hp.untreated.sd,0))]
 
-
-## exploring results
+## === saving out results
 AN <- merge(AN,unique(N[,.(iso3,g_whoregion)]),by='iso3',all.x = TRUE,all.y=FALSE)
-
-
 save(AN,file=here('outdata/AN.Rdata'))
 
 ## TODO list
-## 1. Pete - include HIV split
+## 1. Pete - include HIV split DONE
 ## 2. Anna - check unc calx
