@@ -105,20 +105,25 @@ AN[,sum(untreated)]*5/1e3
 
 ## --- deaths
 ## HIV-ve
-AN[,c('TBMdeaths.hn.treated','TBMdeaths.hn.untreated'):=.(TBM.hn.treated*cfr,TBM.hn.untreated)]
-AN[,c('TBMdeaths.hn.treated.sd','TBMdeaths.hn.untreated.sd'):=.(xfun(TBM.hn.treated,cfr,
-                                                                     TBM.hn.treated.sd,cfr.sd),
-                                                                xfun(TBM.hn.untreated,1,
-                                                                     TBM.hn.untreated.sd,0))]
+AN[,c('TBMdeaths.hn.treated',
+      'TBMdeaths.hn.untreated'):=.(TBM.hn.treated*cfr,TBM.hn.untreated)]
+AN[,c('TBMdeaths.hn.treated.sd',
+      'TBMdeaths.hn.untreated.sd'):=.(xfun(TBM.hn.treated,cfr,
+                                           TBM.hn.treated.sd,cfr.sd),
+                                      xfun(TBM.hn.untreated,1,
+                                           TBM.hn.untreated.sd,0))]
 ## HIV+ve
-AN[,c('TBMdeaths.hp.treated','TBMdeaths.hp.untreated'):=.(TBM.hp.treated*cfrp,TBM.hp.untreated)]
-AN[,c('TBMdeaths.hp.treated.sd','TBMdeaths.hp.untreated.sd'):=.(xfun(TBM.hp.treated,cfrp,
-                                                                     TBM.hp.treated.sd,cfrp.sd),
-                                                                xfun(TBM.hp.untreated,1,
-                                                                     TBM.hp.untreated.sd,0))]
+AN[,c('TBMdeaths.hp.treated',
+      'TBMdeaths.hp.untreated'):=.(TBM.hp.treated*cfrp,TBM.hp.untreated)]
+AN[,c('TBMdeaths.hp.treated.sd',
+      'TBMdeaths.hp.untreated.sd'):=.(xfun(TBM.hp.treated,cfrp,
+                                           TBM.hp.treated.sd,cfrp.sd),
+                                      xfun(TBM.hp.untreated,1,
+                                           TBM.hp.untreated.sd,0))]
 
 ## === saving out results
-AN <- merge(AN,unique(N[,.(iso3,g_whoregion)]),by='iso3',all.x = TRUE,all.y=FALSE)
+AN <- merge(AN,unique(N[,.(iso3,g_whoregion)]),by
+            ='iso3',all.x = TRUE,all.y=FALSE)
 save(AN,file=here('outdata/AN.Rdata'))
 
 ## TODO list
