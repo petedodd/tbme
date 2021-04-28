@@ -338,6 +338,7 @@ df <- unique(data.table(ZCN[,.(sex,age)]))
 dfzd2 <- predict(reszdp,  transf=transf.ilogit)
 dfzd2 <- as.data.table(dfzd2)
 zpdp <- cbind(dfzd2,df)
+zpdp <- unique(zpdp)
 
 
 
@@ -867,18 +868,36 @@ save(MC,file=here('metaout/MC.Rdata'))
 
 
 ## --- Figure Md: TBM CFR HIV+ve
+## use SA data for weighting
+W <- ALL[iso3=='ZAF' & hiv=='hiv+',.(TBM=sum(TBM)),by=.(sex,age)]
+
+## data for plotting
 tmpd <- ALL[!is.na(TBMdeaths) & hiv=='hiv+']
 tmpd[,unique(iso3)]
 
-## add in 
+## add in extras
 zpdp[,se:=(ci.ub-ci.lb)/3.92]
 VDPm[,c('pred','se'):=.(cfr,(hi-lo)/3.92)]
 zpdp[,iso3:='ZAF']
 VDPm[,iso3:='VNM']
 
+## scale SA data to match Stadelman
+## 0.57 (0.48, 0.67)
+stm <- 0.57
+stsd <- abs(0.48-0.67)/3.92
+zpdp <- merge(zpdp,W,by=c('sex','age'))
+mcfr <- weighted.mean(zpdp$pred,zpdp$TBM) #17%
+cat(stm/mcfr,file=here('metaout/zafac.txt'))
+zpdp[,pred2:=pred*stm/mcfr]
+zpdp[,pred2:=pmin(1,pred2)]
+zpdp[,se2:=pred2*sqrt((stsd/stm)^2+(se/pred)^2)]
+zpdp[,c('lo2','hi2'):=.(pred2-1.96*se2,pred2+1.96*se2)]
+zpdp[,hi2:=pmin(1,hi2)]
+
 ## data for MA
 mad.d <- rbind(VDPm[,.(iso3,sex,age,pred,se,hi,lo)],
-               zpdp[,.(iso3,sex,age,pred,se,hi=ci.ub,lo=ci.lb)])
+               zpdp[,.(iso3,sex,age,pred=pred2,
+                       se=se2,hi=hi2,lo=lo2)])
 
 save(mad.d,file=here('metaout/mad.d.Rdata'))
 
@@ -950,7 +969,5 @@ ggsave(papa,file=here('FigM.png'),w=10,h=8)
 
 
 ## NOTE
-## move to repo - position FigM and clean data at top level
-## TODO scale-up wrt MA? weighted average after moving
 ## TODO check CR in BRA? & age ranges
 ## TODO output key estimates as csv
