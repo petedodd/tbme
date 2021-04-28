@@ -968,6 +968,21 @@ ggsave(papa,file=here('FigM.pdf'),w=10,h=8)
 ggsave(papa,file=here('FigM.png'),w=10,h=8)
 
 
+## ======== estimates output for use in modelling ===
+map.a[,c('qty','hiv'):=.('prop','hiv-')]
+map.b[,c('qty','hiv'):=.('prop','hiv+')]
+map.c[,c('qty','hiv'):=.('cfr','hiv-')]
+map.d[,c('qty','hiv'):=.('cfr','hiv+')]
+
+parms <- rbindlist(list(
+    map.a[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)],
+    map.b[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)],
+    map.c[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)],
+    map.d[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)]
+))
+
+fwrite(parms,file=here('meta.combined.estimates.csv'))
+
 ## NOTE
 ## TODO check CR in BRA? & age ranges
-## TODO output key estimates as csv
+## TODO change USA color - mauve?
