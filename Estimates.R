@@ -90,9 +90,14 @@ AN <- merge(AN,BBMp,by=c('sex','age'),all.x=TRUE) #HIV +ve
 
 
 ## === calculations of TBM
+## SA = sensitivity analysis
 ## --- cases
 AN[,c('TBM.hn.treated','TBM.hn.untreated'):=.(notes*propm*(1-hiv),untreated*propm*(1-hiv))] #HIV-ve
 AN[,c('TBM.hp.treated','TBM.hp.untreated'):=.(notes*propmp*hiv,untreated*propmp*hiv)] #HIV+ve
+## sensitivity analyses
+AN[,c('TBM.hn.untreated2','TBM.hp.untreated2'):=.(TBM.hn.untreated/2,TBM.hp.untreated/2)] #SA 1
+AN[,c('TBM.hn.untreated3','TBM.hp.untreated3'):=.(TBM.hn.untreated*2,TBM.hp.untreated*2)] #SA 2
+
 ## case uncertainty
 AN[,c('untreated.hn.sd','untreated.hp.sd'):=.(xfun(untreated,(1-hiv),untreated.sd,hiv.sd),
                                               xfun(untreated,(hiv),untreated.sd,hiv.sd))]
@@ -100,6 +105,11 @@ AN[,c('TBM.hn.treated.sd','TBM.hn.untreated.sd'):=.(xfun(notes*(1-hiv),propm,not
                                                     xfun(untreated*(1-hiv),propm,untreated.hn.sd,propm.sd))] #HIV-
 AN[,c('TBM.hp.treated.sd','TBM.hp.untreated.sd'):=.(xfun(notes,propmp,0,propmp.sd),
                                                     xfun(untreated*hiv,propmp,untreated.hp.sd,propmp.sd))] #HIV+
+## sensitivity analyses
+AN[,c('TBM.hn.untreated2.sd','TBM.hp.untreated2.sd'):=.(xfun(untreated*(1-hiv)/2,propm,untreated.hn.sd/2,propm.sd),
+                                                        xfun(untreated*hiv/2,propmp,untreated.hp.sd/2,propmp.sd))] #SA 1
+AN[,c('TBM.hn.untreated3.sd','TBM.hp.untreated3.sd'):=.(xfun(untreated*(1-hiv)*2,propm,untreated.hn.sd*2,propm.sd),
+                                                        xfun(untreated*hiv*2,propmp,untreated.hp.sd*2,propmp.sd))] #SA 2
 
 ## sanity checks
 AN[,sum(TBM.hn.treated)]
@@ -125,9 +135,24 @@ AN[,c('TBMdeaths.hp.treated.sd',
                                       xfun(TBM.hp.untreated,1,
                                            TBM.hp.untreated.sd,0))]
 
-## === saving out results
-AN <- merge(AN,unique(N[,.(iso3,g_whoregion)]),by
-            ='iso3',all.x = TRUE,all.y=FALSE)
-save(AN,file=here('outdata/AN.Rdata'))
+## sensitivity analyses
+AN[,c('TBMdeaths.hn.untreated2',
+      'TBMdeaths.hp.untreated2'):=.(TBM.hn.untreated2,TBM.hp.untreated2)]
+AN[,c('TBMdeaths.hn.untreated3',
+      'TBMdeaths.hp.untreated3'):=.(TBM.hn.untreated3,TBM.hp.untreated3)]
+AN[,c('TBMdeaths.hn.untreated2.sd',
+      'TBMdeaths.hp.untreated2.sd'):=.(xfun(TBM.hn.untreated2,1,
+                                            TBM.hn.untreated2.sd,0),
+                                       xfun(TBM.hp.untreated2,1,
+                                            TBM.hp.untreated2.sd,0))]
+AN[,c('TBMdeaths.hn.untreated3.sd',
+      'TBMdeaths.hp.untreated3.sd'):=.(xfun(TBM.hn.untreated3,1,
+                                            TBM.hn.untreated3.sd,0),
+                                       xfun(TBM.hp.untreated3,1,
+                                            TBM.hp.untreated3.sd,0))]
 
-## TODO list
+
+## === saving out results
+AN <- merge(AN,unique(N[,.(iso3,g_whoregion)]),
+            by='iso3',all.x = TRUE,all.y=FALSE)
+save(AN,file=here('outdata/AN.Rdata'))
