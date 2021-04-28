@@ -4,22 +4,26 @@
 library(here)
 source(here('utilities.R'))
 
-## === now using the propm & CFR from other meta-analysis
-load(here('indata/preds/TBMP.nh.Rdata'))
-load(here('indata/preds/TBMP.h.Rdata'))
-load(here('indata/preds/CFR.nh.Rdata'))
-load(here('indata/preds/CFR.h.Rdata'))
+## === using the propm & CFR from meta-analysis
+## read meta-analysis results
+maest <- fread('metaanalysis/meta.combined.estimates.csv')
 
-## HIV-ves
-BBM <- merge(TBMP.nh[,.(age,sex,propm=pred,propm.sd=(pred.hi-pred.lo)/3.92)],
-             CFR.nh[,.(age,sex,cfr=pred,cfr.sd=(pred.hi-pred.lo)/3.92)],
-             by=c('age','sex'))
+## reshape HIV-
+BBM <- maest[hiv=='hiv-']
+BBM <- dcast(BBM[,.(qty,sex,age,pred,se)],age+sex~qty,
+             value.var = c('pred','se'))
+BBM <- BBM[,.(age,sex,
+              propm=pred_prop,propm.sd=se_prop,
+              cfr=pred_cfr,cfr.sd=se_cfr)]
 BBM[,sex:=ifelse(sex=='female','F','M')]
 
-## HIV+ves
-BBMp <- merge(TBMP.h[,.(age,sex,propmp=pred,propmp.sd=(pred.hi-pred.lo)/3.92)],
-             CFR.h[,.(age,sex,cfrp=pred,cfrp.sd=(pred.hi-pred.lo)/3.92)],
-             by=c('age','sex'))
+## reshape HIV+
+BBMp <- maest[hiv=='hiv+']
+BBMp <- dcast(BBMp[,.(qty,sex,age,pred,se)],age+sex~qty,
+             value.var = c('pred','se'))
+BBMp <- BBMp[,.(age,sex,
+                propmp=pred_prop,propmp.sd=se_prop,
+                cfrp=pred_cfr,cfrp.sd=se_cfr)]
 BBMp[,sex:=ifelse(sex=='female','F','M')]
 
 ## === load WHO notifications
@@ -127,5 +131,3 @@ AN <- merge(AN,unique(N[,.(iso3,g_whoregion)]),by
 save(AN,file=here('outdata/AN.Rdata'))
 
 ## TODO list
-## 1. Pete - include HIV split DONE
-## 2. Anna - check unc calx
