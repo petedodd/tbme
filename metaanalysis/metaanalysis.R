@@ -14,7 +14,7 @@ clz <-  c("#000000", "#E69F00",
           "#F0E442", "#0072B2",
           "#D55E00", "#CC79A7")
 
-cnz <- c("BRA"=clz[1], "GBR"=clz[3], "USA"=clz[2],
+cnz <- c("BRA"=clz[1], "GBR"=clz[3], "USA"="orchid2",
          "VNM"=clz[5], "ZAF"=clz[4])
 
 myth <- theme_bw() + 
@@ -678,7 +678,7 @@ mad.a <- rbind(
     ukpp[,.(iso3='GBR',sex,age,pred,hi=ci.ub,lo=ci.lb)],
     zppn[,.(iso3='ZAF',sex,age,pred,hi=ci.ub,lo=ci.lb)],
     vnpn[,.(iso3='VNM',sex,age,pred,hi=ci.ub,lo=ci.lb)],
-    pdza[,.(iso3='BRA',sex='female',age,pred,hi=ci.ub,lo=ci.lb)]
+    pdza[,.(iso3='BRA',sex='female',age,pred,hi=cr.ub,lo=cr.lb)]
 )
 
 mad.a[,se:=(hi-lo)/3.92]
@@ -747,11 +747,11 @@ tmpb2[is.na(age2),age2:=82.5]
 ## 1  = 20 and 1 per 10
 tmpb2[,age:=1+(age2-20)/10]
 
-## data for MA [,.(iso3,sex,age,pred,se,hi,lo)]
+## data for MA
 mad.b <- rbind(
     zppp[,.(iso3='ZAF',sex,age,pred,hi=ci.ub,lo=ci.lb)],
     vnpp[,.(iso3='VNM',sex,age,pred,hi=ci.ub,lo=ci.lb)],
-    pdzap[,.(iso3='BRA',sex='female',age,pred,hi=ci.ub,lo=ci.lb)]
+    pdzap[,.(iso3='BRA',sex='female',age,pred,hi=cr.ub,lo=cr.lb)]
 )
 
 mad.b[,se:=(hi-lo)/3.92]
@@ -961,9 +961,6 @@ papa <- ggarrange(PAPa,PAPb,PAPc,PAPd,
                   common.legend = TRUE)
 papa
 
-
-
-
 ggsave(papa,file=here('FigM.pdf'),w=10,h=8)
 ggsave(papa,file=here('FigM.png'),w=10,h=8)
 
@@ -984,5 +981,4 @@ parms <- rbindlist(list(
 fwrite(parms,file=here('meta.combined.estimates.csv'))
 
 ## NOTE
-## TODO check CR in BRA? & age ranges
-## TODO change USA color - mauve?
+## TODO consider removing metaplots?
