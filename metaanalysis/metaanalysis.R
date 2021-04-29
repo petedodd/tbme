@@ -657,6 +657,80 @@ fwrite(casesCFR.hiv,file=here('metaout/casesCFR.hiv.csv'))
 cases.iso3 <- ALL[,.(TBM=sum(TBM,na.rm=TRUE)),by=iso3]
 fwrite(cases.iso3,file=here('metaout/cases.iso3.csv'))
 
+cases.sex <- ALL[,.(TB=sum(TB,na.rm = TRUE),
+                    TBM=sum(TBM,na.rm = TRUE),
+                    TBMdeaths=sum(TBMdeaths,na.rm = TRUE)),by=sex]
+cases.sex[is.na(sex),sex:='missing']
+fwrite(cases.sex,file=here('metaout/cases.sex.csv'))
+
+
+## === "participant" table ====
+ALL
+
+names(cases.sex)[1] <- names(cases.hiv)[1] <- 'qty'
+ALL[,qty:=iso3]
+ALL[iso3=='VNM' & is.na(TBMdeaths),qty:=paste0(iso3,' (cases)')]
+ALL[iso3=='VNM' & is.na(TB),qty:=paste0(iso3,' (deaths)')]
+tmp.iso3 <- ALL[,.(TB=sum(TB,na.rm = TRUE),
+                   TBM=sum(TBM,na.rm = TRUE),
+                   TBMdeaths=sum(TBMdeaths,na.rm = TRUE)),by=qty]
+## ages
+tmp.age <- ALL[,.(TB=sum(TB,na.rm = TRUE),
+                  TBM=sum(TBM,na.rm = TRUE),
+                  TBMdeaths=sum(TBMdeaths,na.rm = TRUE)),
+               by=.(qty=age)]
+tmp.age1 <- tmp.age[1:7]
+tmp.age2 <- tmp.age[8:13]
+tmp.age1[,QTY:='Age (BRA)']
+tmp.age2[,QTY:='Age (not BRA)']
+
+## year
+tmp.year <- ALL[,.(TB=sum(TB,na.rm = TRUE),
+                  TBM=sum(TBM,na.rm = TRUE),
+                  TBMdeaths=sum(TBMdeaths,na.rm = TRUE)),
+                by=.(qty=year)]
+tmp.year[,qty:=as.character(qty)]
+tmp.year[is.na(qty),qty:='missing']
+tmp.year <- tmp.year[order(qty)]
+
+cases.sex[,QTY:='Sex']
+cases.hiv[,QTY:='HIV']
+tmp.iso3[,QTY:='Country']
+tmp.year[,QTY:='Year']
+
+tmp1 <- data.table(QTY='Total',qty='Total',cases)
+nnn <- c('QTY','qty','TB','TBM','TBMdeaths')
+
+
+participant <- rbindlist(list(
+    tmp1[,..nnn],cases.sex[,..nnn],
+    cases.hiv[,..nnn],tmp.iso3[,..nnn],
+    tmp.age1[,..nnn],tmp.age2[,..nnn],
+    tmp.year[,..nnn]
+))
+participant
+
+participant[,c('TB.t','TBM.t','TBMdeaths.t'):=.(
+                 sum(TB),
+                 sum(TBM),
+                 sum(TBMdeaths)),by=QTY]
+participant[,c('TB.p','TBM.p','TBMdeaths.p'):=.(
+                 round(1e2*TB/TB.t),
+                 round(1e2*TBM/TBM.t),
+                 round(1e2*TBMdeaths/TBMdeaths.t))]
+participant[,c('TB.x','TBM.x','TBMdeaths.x'):=.(
+                 paste0(TB,' (',TB.p,'%)'),
+                 paste0(TBM,' (',TBM.p,'%)'),
+                 paste0(TBMdeaths,' (',TBMdeaths.p,'%)')
+             )]
+participant[QTY=='Age (BRA)',TBMdeaths.x:=NA]
+participant <- participant[,.(QTY,qty,
+                              TB=TB.x,TBM=TBM.x,
+                              `TBM deaths`=TBMdeaths.x)]
+
+
+fwrite(participant,file=here('participant.csv'))
+
 ## ============= FIGURES & OVERALL POOLING
 
 ## --- Figure Ma: TBM prop HIV-ve
