@@ -181,9 +181,9 @@ library(rgeos)
 
 ## loading
 load(file=here('outdata/AN.Rdata')) #country level estimates
-H <- fread(here('indata/TB_burden_countries_2020-02-24.csv'))
-H <- H[year==2018,.(iso3,e_pop_num)] #for population
-H[,sum(e_pop_num)]/1e9               #check units
+load(file=here('indata/Nadults18.Rdata')) #country level estimates
+Nadults18[,sum(pop15plus)]*1e3/1e9   #check units
+H <- Nadults18[,.(iso3,e_pop_num=1e3*pop15plus)]
 ## NOTE should be over 15 pop
 
 ## --- global
@@ -233,6 +233,3 @@ p
 
 ggsave(p,file=here('graphs/Map.pdf'),w=18,h=12)
 ggsave(p,file=here('graphs/Map.png'),w=18,h=12)
-
-## TODO
-## fix denominator data to be population >=15

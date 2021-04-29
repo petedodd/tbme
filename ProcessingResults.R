@@ -437,20 +437,22 @@ GROt.sa3 <- transpose(GRO.sa3)
 GROt.sa3 <- cbind(data.table(quantity=c(names(GRO.sa3))),GROt.sa3)
 fwrite(GROt.sa3,file=here('results/GROt.sa3.csv'),col.names = FALSE)
 
-## seprate files
-fwrite(G,file=here('outdata/G.csv'))
-fwrite(R,file=here('outdata/R.csv'))
-fwrite(G.sa2,file=here('outdata/G.sa2.csv'))
-fwrite(R.sa2,file=here('outdata/R.sa2.csv'))
-fwrite(G.sa3,file=here('outdata/G.sa3.csv'))
-fwrite(R.sa3,file=here('outdata/R.sa3.csv'))
+## seprate files (for graphs)
+save(G,file=here('outdata/G.Rdata'))
+save(R,file=here('outdata/R.Rdata'))
+save(G.sa2,file=here('outdata/G.sa2.Rdata'))
+save(R.sa2,file=here('outdata/R.sa2.Rdata'))
+save(G.sa3,file=here('outdata/G.sa3.Rdata'))
+save(R.sa3,file=here('outdata/R.sa3.Rdata'))
 ## ...SAs
-fwrite(G,file=here('outdata/G.sd.csv'))
-fwrite(R.sd,file=here('outdata/R.sd.csv'))
-fwrite(G.sa2.sd,file=here('outdata/G.sa2.sd.csv'))
-fwrite(R.sa2.sd,file=here('outdata/R.sa2.sd.csv'))
-fwrite(G.sa3.sd,file=here('outdata/G.sa3.sd.csv'))
-fwrite(R.sa3.sd,file=here('outdata/R.sa3.sd.csv'))
+save(G,file=here('outdata/G.sd.Rdata'))
+save(R.sd,file=here('outdata/R.sd.Rdata'))
+save(G.sa2.sd,file=here('outdata/G.sa2.sd.Rdata'))
+save(R.sa2.sd,file=here('outdata/R.sa2.sd.Rdata'))
+save(G.sa3.sd,file=here('outdata/G.sa3.sd.Rdata'))
+save(R.sa3.sd,file=here('outdata/R.sa3.sd.Rdata'))
+
+
 
 ## ------------------ age version
 ## utility function for this section

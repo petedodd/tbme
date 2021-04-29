@@ -7,8 +7,26 @@ TBC
 ### R package requirements
 
 The following packages are required and can be installed from CRAN:
-- here
-- blah
+
+(analysis & utilities)
+- library(here)
+- library(data.table)
+- library(metafor)
+- library(rms)
+
+(plotting)
+- library(ggplot2)
+- library(ggpubr)
+- library(ggthemes)
+- library(scales)
+
+(mapping)
+- library(sf)
+- library(tmap)
+- library(maptools)
+- library(rgeos)
+
+
 
 ### Directory structure
 
@@ -18,7 +36,7 @@ To run without modification, two additional directories must be created:
 
 1. metaanalysis/metaplots/
 2. outdata/
-
+3. graphs/
 
 ### Order
 
@@ -32,21 +50,6 @@ The analyses must be run in the following order:
 
 # TODO
 
-(reg,global) X
-
-Incidence:
-HIV-negative treated
-HIV-positive treated
-Total treated
-HIV-negative untreated
-HIV-positive untreated
-Total untreated
-Total HIV-positive
-Total HIV-negative
-Total
-
-
-
-- uncertainty
-- SA outputs
-- correct denominator for map
+- decide how to publish indata/ & describe above
+- consider what in gitignore may need to be unignored
+- check what indata/BB.Rdata is
