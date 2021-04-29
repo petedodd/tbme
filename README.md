@@ -53,3 +53,8 @@ The analyses must be run in the following order:
 - decide how to publish indata/ & describe above
 - consider what in gitignore may need to be unignored
 - check what indata/BB.Rdata is
+
+- SA bug
+- clean output at country level
+- look at change in overall incidence under new data
+- table on counts data
