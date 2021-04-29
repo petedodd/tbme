@@ -49,7 +49,7 @@ NP[,total.notes:=sum(value,na.rm=TRUE),by=iso3]
 origiso <- NP[,unique(iso3)]
 NP <- NP[total.notes>200]                     #remove small-TB countries
 (dropped <- setdiff(origiso,NP[,unique(iso3)]))
-cat(dropped,file=here('indata/drop_lonote.txt'))
+cat(dropped,file=here('outdata/drop_lonote.txt'))
 NP[age=='65-',age:='65+']
 
 ## === load WHO age-specific incidence estimates
@@ -82,12 +82,12 @@ AN <- merge(NP[,.(iso3,sex,age,notes=value)],
 AN[notes>inc]                           #a few to watch out for
 AN[,untreated:=pmax(inc-notes,0)]
 AN[,untreated.sd:=(hi-lo)/3.92]         #as per incidence
-AN <- merge(AN,H[,.(iso3,hiv,hiv.sd)],by=c('iso3'),all.x=TRUE,all.y=FALSE)
+AN <- merge(AN,H[,.(iso3,hiv,hiv.sd)],by=c('iso3'),
+            all.x=TRUE,all.y=FALSE)
 
 ## merge in BBM
 AN <- merge(AN,BBM,by=c('sex','age'),all.x=TRUE)  #HIV -ve
 AN <- merge(AN,BBMp,by=c('sex','age'),all.x=TRUE) #HIV +ve
-
 
 ## === calculations of TBM
 ## SA = sensitivity analysis
