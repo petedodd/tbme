@@ -663,6 +663,15 @@ cases.sex <- ALL[,.(TB=sum(TB,na.rm = TRUE),
 cases.sex[is.na(sex),sex:='missing']
 fwrite(cases.sex,file=here('metaout/cases.sex.csv'))
 
+## by country for text
+cases.country.text <- ALL[,.(nyear=length(unique(year)),
+                             TB=sum(TB,na.rm = TRUE),
+                             TBM=sum(TBM,na.rm = TRUE),
+                             TBMdeaths=sum(TBMdeaths,na.rm = TRUE)),
+                          by=iso3]
+
+fwrite(cases.country.text,file=here('metaout/cases.country.text.csv'))
+
 
 ## === "participant" table ====
 ALL
