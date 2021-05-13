@@ -949,6 +949,16 @@ MC
 ggsave(MC,file=here('metaout/MC.pdf'),w=6,h=4)
 save(MC,file=here('metaout/MC.Rdata'))
 
+## compute weighted HIV-ve CFR
+wtdata <- ALL[iso3 %in% c('USA','VNM','ZAF') & hiv=='hiv-',
+              .(value=sum(TBM)),by=.(sex,age)] #weights
+wtdata <- merge(wtdata,map.c[,.(pred,se,sex,age)],by=c('sex','age'))
+
+mhncfr <- weighted.mean(wtdata$pred,wtdata$value) #16%
+mhncfr.se <- sqrt(weighted.mean(wtdata$se^2,wtdata$value^2))
+vout <- c(mhncfr,mhncfr-1.96*mhncfr.se,mhncfr+1.96*mhncfr.se)
+cat(vout,file=here('metaout/hnCFRweighted.txt'))
+
 
 ## --- Figure Md: TBM CFR HIV+ve
 ## use SA data for weighting
