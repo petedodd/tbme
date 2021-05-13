@@ -775,10 +775,18 @@ map.a <- cbind(map.a,mad.a[,.(sex,age)])
 map.a <- unique(map.a)
 ## map.a[,c('value','lo','hi'):=.(pred,ci.lb,ci.ub)]
 
+cat(ma.a$I2,file=here('metaout/maAI2.txt'))
+
 save(map.a,file=here('metaout/map.a.Rdata'))
 
 mad.a[iso3=='BRA',sex:='both']
 save(mad.a,file=here('metaout/mad.a.Rdata'))
+
+## country mean range
+cnmeanprop <- ALL[hiv=='hiv-' & !is.na(TB),
+                  .(TB=sum(TB),TBM=sum(TBM)),by=.(iso3)]
+cnmeanprop[,pc:=1e2*TBM/TB]
+fwrite(cnmeanprop,file=here('metaout/cnmeanprop.csv'))
 
 
 ## xtra cols for plot
