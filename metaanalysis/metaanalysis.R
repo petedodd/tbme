@@ -673,6 +673,15 @@ cases.sex <- ALL[,.(TB=sum(TB,na.rm = TRUE),
 cases.sex[is.na(sex),sex:='missing']
 fwrite(cases.sex,file=here('metaout/cases.sex.csv'))
 
+## by country for text
+cases.country.text <- ALL[,.(nyear=length(unique(year)),
+                             TB=sum(TB,na.rm = TRUE),
+                             TBM=sum(TBM,na.rm = TRUE),
+                             TBMdeaths=sum(TBMdeaths,na.rm = TRUE)),
+                          by=iso3]
+
+fwrite(cases.country.text,file=here('metaout/cases.country.text.csv'))
+
 
 ## === "participant" table ====
 ALL
@@ -776,10 +785,18 @@ map.a <- cbind(map.a,mad.a[,.(sex,age)])
 map.a <- unique(map.a)
 ## map.a[,c('value','lo','hi'):=.(pred,ci.lb,ci.ub)]
 
+cat(ma.a$I2,file=here('metaout/maAI2.txt'))
+
 save(map.a,file=here('metaout/map.a.Rdata'))
 
 mad.a[iso3=='BRA',sex:='both']
 save(mad.a,file=here('metaout/mad.a.Rdata'))
+
+## country mean range
+cnmeanprop <- ALL[hiv=='hiv-' & !is.na(TB),
+                  .(TB=sum(TB),TBM=sum(TBM)),by=.(iso3)]
+cnmeanprop[,pc:=1e2*TBM/TB]
+fwrite(cnmeanprop,file=here('metaout/cnmeanprop.csv'))
 
 
 ## xtra cols for plot
@@ -949,6 +966,16 @@ MC
 
 ggsave(MC,file=here('metaout/MC.pdf'),w=6,h=4)
 save(MC,file=here('USA/MC.Rdata'))
+
+## compute weighted HIV-ve CFR
+wtdata <- ALL[iso3 %in% c('USA','VNM','ZAF') & hiv=='hiv-',
+              .(value=sum(TBM)),by=.(sex,age)] #weights
+wtdata <- merge(wtdata,map.c[,.(pred,se,sex,age)],by=c('sex','age'))
+
+mhncfr <- weighted.mean(wtdata$pred,wtdata$value) #16%
+mhncfr.se <- sqrt(weighted.mean(wtdata$se^2,wtdata$value^2))
+vout <- c(mhncfr,mhncfr-1.96*mhncfr.se,mhncfr+1.96*mhncfr.se)
+cat(vout,file=here('metaout/hnCFRweighted.txt'))
 
 
 ## --- Figure Md: TBM CFR HIV+ve

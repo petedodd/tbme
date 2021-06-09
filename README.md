@@ -53,6 +53,8 @@ The analyses must be run in the following order:
 - decide how to publish indata/ & describe above
 - consider what in gitignore may need to be unignored
 
+- look at new results on meta-analysis
+- also adhoc %ages for text
 - clean output at country level*
 - look at change in overall incidence under new data
 - article methods text*
