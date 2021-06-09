@@ -40,6 +40,8 @@ To run without modification, two additional directories must be created:
 
 ### Order
 
+*NOTE* a condition of release of US data was that cells with count under 5 were labelled under 5. Therefore the raw US data is not included in this repository & the clean output data has relevant cells labelled '<5'. Other aspects of the metaanalysis should be reproducible, and the estimation process above the metaanalysis level also has no restrictions.
+
 The analyses must be run in the following order:
 
 1. metaanalysis/metaanalysis.R (this cleans the input data and runs the meta-analysis)
@@ -48,15 +50,3 @@ The analyses must be run in the following order:
 4. Plots.R (makes remaining plots)
 
 
-# TODO
-
-- decide how to publish indata/ & describe above
-- consider what in gitignore may need to be unignored
-
-- look at new results on meta-analysis
-- also adhoc %ages for text
-- clean output at country level*
-- look at change in overall incidence under new data
-- article methods text*
-- bottom corner comparison*
-- table version of bar chart figure*
