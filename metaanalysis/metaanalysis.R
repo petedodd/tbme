@@ -62,7 +62,7 @@ test <- coef(summary(resuk))
 
 
 ## --------- iso3=USA ---------
-US <- fread(here('metain/USA/USTBM.csv'))
+US <- fread(here('USA/USTBM.csv'))
 US
 US$age <- gsub('\\s','',as.character(US$age))
 US$age <- factor(US$age)
@@ -624,7 +624,17 @@ ALL <- rbindlist(list(
 ALL[,unique(age)]
 ALL[,unique(hiv)]
 
-fwrite(ALL,file=here('meta.combined.count.data.csv'))
+## NOTE US data needs cells under 5 redacted
+ALL.US.no.lt.5 <- copy(ALL)
+ALL.US.no.lt.5[,togo:=FALSE]; ALL.US.no.lt.5[,togo0:=FALSE]
+ALL.US.no.lt.5[iso3=='USA' & TBM<5,togo0:=TRUE]
+ALL.US.no.lt.5[iso3=='USA' & TBMdeaths<5,togo:=TRUE]
+ALL.US.no.lt.5[,c('TBM','TBMdeaths'):=.(as.character(TBM),
+                                        as.character(TBMdeaths))]
+ALL.US.no.lt.5[togo0==TRUE,TBM:='<5']
+ALL.US.no.lt.5[togo==TRUE,TBMdeaths:='<5']
+ALL.US.no.lt.5[,c('togo','togo0'):=NULL]
+fwrite(ALL.US.no.lt.5,file=here('meta.combined.count.data.clean.csv'))
 
 ## compute counts etc here
 rnge <- ALL[,range(year,na.rm=TRUE)]
@@ -805,7 +815,7 @@ MA <- ggplot(mad.a,aes(x=age,y=value,col=iso3,group=iso3)) +
 MA
 
 ggsave(MA,file=here('metaout/MA.pdf'),w=6,h=4)
-save(MA,file=here('metaout/MA.Rdata'))
+save(MA,file=here('USA/MA.Rdata')) #jj
 
 
 ## --- Figure Mb: TBM prop HIV+ve
@@ -938,7 +948,7 @@ MC <- ggplot(mad.c,aes(x=age,y=value,col=iso3,group=iso3)) +
 MC
 
 ggsave(MC,file=here('metaout/MC.pdf'),w=6,h=4)
-save(MC,file=here('metaout/MC.Rdata'))
+save(MC,file=here('USA/MC.Rdata'))
 
 
 ## --- Figure Md: TBM CFR HIV+ve
