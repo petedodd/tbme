@@ -1,6 +1,5 @@
 .Rhistory
 .DS_Store
-indata/*
 outdata/*
 graphs/*
 metaanalysis/metaplots

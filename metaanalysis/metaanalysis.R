@@ -1089,7 +1089,28 @@ parms <- rbindlist(list(
     map.d[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)]
 ))
 
+parms <- parms[order(qty,hiv,sex,age)]
+parms[,txt:=paste0(round(1e2*pred,1)," (",round(1e2*se,1),")")]
+
 fwrite(parms,file=here('meta.combined.estimates.csv'))
 
-## NOTE
-## TODO consider removing metaplots?
+
+## country version
+mad.a[,c('qty','hiv'):=.('prop','hiv-')]
+mad.b[,c('qty','hiv'):=.('prop','hiv+')]
+mad.c[,c('qty','hiv'):=.('cfr','hiv-')]
+mad.d[,c('qty','hiv'):=.('cfr','hiv+')]
+
+cparms <- rbindlist(list(
+    mad.a[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)],
+    mad.b[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)],
+    mad.c[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)],
+    mad.d[,.(qty,hiv,sex,age,pred,ci.lb,ci.ub,se)]
+))
+
+
+cparms <- cparms[order(qty,hiv,sex,age)]
+cparms[,txt:=paste0(round(1e2*pred,1)," (",round(1e2*se,1),")")]
+
+fwrite(cparms,file=here('meta.combined.country.estimates.csv'))
+
