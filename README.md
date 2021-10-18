@@ -1,6 +1,26 @@
 # tbme
-TBC
 
+The global burden of tuberculous meningitis in adults: a modelling study
+
+Peter J Dodd,
+Muhammad Osman,
+Fiona V Cresswell,
+Anna M Stadelman,
+Nguyen Huu Lan,
+Nguyen Thuy Thuong Thuong,
+Morris Muzyamba,
+Lisa Glaser,
+Sicelo S Dlamini,
+James A Seddon
+
+
+## License
+
+This work is licensed under a Creative Commons Attribution 4.0 International License
+
+http://creativecommons.org/licenses/by/4.0/
+
+![http://creativecommons.org/licenses/by/4.0/](https://i.creativecommons.org/l/by/4.0/88x31.png)
 
 ## Notes on running the analysis
 
