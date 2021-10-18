@@ -894,7 +894,7 @@ MB <- ggplot(mad.b,aes(x=age,y=value,col=iso3,group=iso3)) +
     scale_color_manual(values=cnz)+
     scale_fill_manual(values=cnz)+
     expand_limits(y=0) +
-    xlab('Age group') + ylab('TBM in TB') +
+    xlab('Age group') + ylab('TBM in TB for PLHIV') +
     ## MA
     geom_point(data=map.b,aes(x=age,y=pred),col=2,size=2)+
     geom_line(data=map.b,aes(x=age,y=pred),col=2,size=0.7)+
@@ -1047,7 +1047,7 @@ MD <- ggplot(mad.d,aes(x=age,y=value,col=iso3,group=iso3)) +
   scale_color_manual(values=cnz)+
   scale_fill_manual(values=cnz)+
   expand_limits(y=0) +
-  xlab('Age group') + ylab('CFR in treated TBM') +
+  xlab('Age group') + ylab('CFR in treated TBM for PLHIV') +
   ## MA
   geom_point(data=map.d,aes(x=age,y=pred),col=2,size=2)+
   geom_line(data=map.d,aes(x=age,y=pred),col=2,size=0.7)+
@@ -1059,6 +1059,7 @@ MD
 ggsave(MD,file=here('metaout/MD.pdf'),w=6,h=4)
 save(MD,file=here('metaout/MD.Rdata'))
 
+load(file=here('metaout/MA.Rdata'))
 
 ## =========== joint figure ========
 PAPa <- MA + guides(size=FALSE)
