@@ -139,10 +139,7 @@ RAMS$qty <- factor(RAMS$qty,levels=c('incidence','deaths'),ordered=TRUE)
 RAMS$hiv <- factor(RAMS$hiv,levels=c('HIV-negative','HIV-positive'),
                   ordered=TRUE)
 
-## age & sex
-
 ## age & sex & HIV
-
 
 GP <- ggplot(RAMS,aes(age,value,fill=paste(treatment,hiv))) +
     geom_bar(stat='identity') +
@@ -175,9 +172,8 @@ ggsave(GP,file=here('graphs/RAhs2.png'),h=10,w=12)
 ## --- maps ------
 ## libraries for mapping
 library(sf)
-library(tmap)
-library(maptools)
-library(rgeos)
+## library(rnaturalearth)
+## library(rgeos)
 
 ## loading
 load(file=here('outdata/AN.Rdata')) #country level estimates
@@ -202,33 +198,53 @@ mpd[,`TBM deaths`:=TBMdeaths.total]
 mpd[,`TBM deaths per million`:=1e6*TBMdeaths.total/e_pop_num]
 mpd[,TBmu:=1e6*TBMdeaths.total/e_pop_num]
 
-## world map data
-data(wrld_simpl)
 
-## create  map data
-MPD <- wrld_simpl#[wrld_simpl$ISO3 %in% mpd$iso3, ]
-MPD <- sp::merge(MPD,mpd,by.x = 'ISO3',by.y='iso3')
+## NOTE PLOS journals require base data with CC-BY compatible licensing
+## I was unable to identify an R package with appropriate map data
+## This data is not in the repo, but
+## the shapefile used here can be downloaded from the Worldbank at:
+## https://datacatalog.worldbank.org/search/dataset/0038272
+## read in map data
+MPD <- st_read("~/Documents/WB_countries_Admin0_10m/WB_countries_Admin0_10m.shp") #core
+MPD2 <- st_read("~/Documents/WB_disputed_areas_Admin0_10m/WB_disputed_areas_Admin0_10m.shp") #disputed for Western Sahara etc
 
+## common names
+bnmz <- intersect(names(MPD),
+                  names(MPD2))
+
+## combine
+MPD <- rbind(MPD[,bnmz],MPD2[,bnmz])
+
+## what to join on?
 names(MPD)
-MP <- st_as_sf(MPD)
-MP$mid <- st_centroid(MP$geometry)
+setdiff(mpd$iso3,MPD$ISO_A3_EH) # OK
 
+## merge in
+MPD <- sp::merge(MPD,mpd,by.x = 'ISO_A3_EH',by.y='iso3',all.x=TRUE)
+
+
+## convert & add mid-coords
+MP <- st_as_sf(MPD)
+MP$mid <- st_centroid(MP$geometry,of_largest_polygon = TRUE)
+
+## check range
 mpd[,range(TBM.total)]
 
 ##  version
 p <- ggplot(data=MP) +
-    geom_sf(aes(fill=TBI)) +
-    scale_fill_distiller(name='TBM incidence per million',
-                         palette='Reds',direction = 1)+
-    geom_sf(aes(geometry = mid, size = as.numeric(TBM.total)),
-            show.legend = "point")+ #,shape=1) +
-    scale_size_continuous(name='TBM incidence',
-                          range=c(1,18))+ #,breaks=c(1,10,50,100)
-    theme_minimal() +
-    theme(legend.position = c(.1,.45),#'left',
-          legend.title.align = 0.5,
-          axis.text.x = element_blank(),
-          axis.text.y = element_blank())
+  geom_sf(aes(fill=TBI)) +
+  scale_fill_distiller(name='TBM incidence per million',
+                       na.value = 'grey',
+                       palette='Reds',direction = 1)+
+  geom_sf(aes(geometry = mid, size = as.numeric(TBM.total)),
+          show.legend = "point")+ #,shape=1) +
+  scale_size_continuous(name='TBM incidence',
+                        range=c(1,18))+ #,breaks=c(1,10,50,100)
+  theme_minimal() +
+  theme(legend.position = c(.1,.45),#'left',
+        legend.title.align = 0.5,
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank())
 p
 
 ggsave(p,file=here('graphs/Map.pdf'),w=18,h=12)
