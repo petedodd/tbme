@@ -175,7 +175,7 @@ ggsave(here('metaplots/VNM.pdf'),w=10,h=5)
 vnpn <- unique(dfv[,.(pred,ci.lb,ci.ub,sex,age)])
 
 ## HIV +ve
-resvp <- rma(measure="PLO", xi=TBM, ni=TB, data=VNMp,mods=~age+sex)
+resvp <- rma(measure="PLO", xi=TBM, ni=TB, data=VNMp[TB>0],mods=~age+sex)
 print(resvp, digits=3)
 
 df <- unique(data.table(VNMp[,.(sex,age)]))
@@ -622,7 +622,7 @@ ALL <- rbindlist(list(
   ZAALL
 ))
 ALL[,unique(age)]
-ALL[,unique(hiv)]
+ALL[,unique(hiv)] #save(ALL,file='TBM/ALL.Rdata')
 
 ## NOTE US data needs cells under 5 redacted
 ALL.US.no.lt.5 <- copy(ALL)
@@ -1059,7 +1059,6 @@ MD
 ggsave(MD,file=here('metaout/MD.pdf'),w=6,h=4)
 save(MD,file=here('metaout/MD.Rdata'))
 
-load(file=here('metaout/MA.Rdata'))
 
 ## =========== joint figure ========
 PAPa <- MA + guides(size=FALSE)
